@@ -11,9 +11,8 @@ import picamera # 摄像头操作支持库
 # 参考手册:https://blog.csdn.net/m0_37509650/article/details/80282646
 # [官方文档] https://picamera.readthedocs.io/en/release-1.13/
 # https://blog.csdn.net/talkxin/article/details/50504601
-import os , time 
+import os , time , ftplib
 import threading as TR
-
 
 if os.name == 'posix':
     import RPi.GPIO as GPIO
@@ -31,12 +30,11 @@ if __name__ ==  '__main__':
 else:
     quit ()
 # ==================== 启动方式检测 =============================
+try:
+    os.chdir (os.path.dirname((os.path.abspath(__file__)))) # 更改路径到脚本运行目录
+    os.mkdir ('img',mode=0o777)
 
-os.chdir (os.path.dirname((os.path.abspath(__file__)))) # 更改路径到脚本运行目录
-os.mkdir ('img',mode=0o777)
 os.mkdir ('video',mode=0o777)
-DIR_IMG = '/img/'
-DIR_VIDEO = '/video/'
 EXIT = False # 退出标志符
 TH_LIST = []
 class CODEING_STATE ():
@@ -44,6 +42,14 @@ class CODEING_STATE ():
     FREE = 0 # 空闲
     RECODING = 1 # 录制中
     TRANSCODING = 2 # 文件编码
+# === FTP===
+FTP_HOST = '192.168.3.49'
+FTP_USER = 'jayftp'
+FTP_PASSWD = '0000'
+FTP_PORT = 21
+FTP_BUFSIZE = 1500 # 缓冲区大小
+FTP_REFRESH_clock = 600 # FTP服务器每次刷新的间隔
+FTP_ENCODING = 'utf-8' 
 # ===================== 常量赋值 ============================
 
 GPIO.setmode (GPIO.BCM)
@@ -59,10 +65,21 @@ PICM.framerate = 24 # 帧率
 PICM.resolution = (1920,1080) # 1080p
 # ====================== PiCamera初始化 ===========================
 
-def getTimeStamp (): # 获取时间戳
+def getFileName (path): 
+    '''
+        传入一个文本,返回在最后一个 '/' 之后的全部字符
+        例如: '/a/b/c.exe' 返回 'c.exe'
+    '''
+    index = 0
+    for i in path[::-1]:
+        if i == '/':
+            break
+        index += 1
+    
+    return path [-1:0-index+1]
+def getTimeStamp (format='%Y-%m-%d-%a-%H-%M-%S'): # 获取时间戳
     '''获取时间戳'''
-    fmt='%Y-%m-%d-%a-%H-%M-%S'      #定义时间显示格式
-    return time.strftime(fmt,time.localtime())     #把传入的元组按照格式，输出字符串
+    return time.strftime(format,time.localtime())     #把传入的元组按照格式，输出字符串
 # ======================= 辅助函数 ===============================
 
 def stateListener ():
@@ -89,7 +106,7 @@ def stateListener ():
 TH_STATE_LISTENER = TR.Thread (target=stateListener)
 TH_STATE_LISTENER.start ()
 TH_LIST.append (TH_STATE_LISTENER)
-# ======================= LED监听初始化 ==========================
+# ======================= LED监听开始 ==========================
 
 def buttonListener ():
     '''录制按钮的监听程序'''
@@ -98,20 +115,79 @@ def buttonListener ():
         while not EXIT:
             if GPIO.wait_for_edge (18,GPIO.RISING,bouncetime=200,timeout=1000) != None: # 等待按钮按下
                 CODEING_STATE.get = CODEING_STATE.RECODING # 按钮按下,开始录制 设置标记
-                with open (DIR_VIDEO+getTimeStamp+'.h264','wb') as stream:
+                try:
+                    os.mkdir (os.path.join('video',getTimeStamp('%Y-%m-%d')))
+                with open (os.path.join('video',getTimeStamp('%Y-%m-%d'),getTimeStamp())+'.h264','wb') as stream:
                     time.sleep (1)
                     PICM.start_recording(stream,format='h264',quality=35) # 开始录制
                     GPIO.wait_for_edge (18,GPIO.FALLING,bouncetime=200) # 等待按钮再次按下
                     PICM.stop_recording () # 停止录制
                 
     except KeyboardInterrupt:
-        PICM.stop_preview ()
         PICM.stop_recording () # 停止录制
         EXIT = True
 TH_BUTTON_LISTENER = TR.Thread(target=buttonListener)
 TH_BUTTON_LISTENER.start ()
 TH_LIST.append (TH_BUTTON_LISTENER)
-# ======================= 按钮监听初始化 ==========================
+# ======================= 按钮监听开始 ==========================
+
+FTP = None
+def FTPWORKER ():
+    global FTP
+    # =================
+    def login ():
+        global FTP
+        while True: # 循环连接服务器
+            time.sleep (2)
+            try:
+                FTP = ftplib.FTP (FTP_HOST,FTP_USER,FTP_PASSWD)
+                FTP.connect(port=FTP_PORT)
+                FTP.login(FTP_USER,FTP_PASSWD)
+                FTP.encoding = FTP_ENCODING # FTP 服务器使用的是UTF - 8 编码
+                print ('Ftp server connect successed.')
+                break
+            except TimeoutError: # 超时
+                print ('Connect failed : time out.')
+    def file_explain (path='',return_dir_list=[],return_file_list=[]):
+        '''
+            传入一个目录,然后对目录进行解析
+            将目录下的所有目录append到 return_dir_list 中
+            将目录下的所有文件append到 return_file_list 中.
+        '''
+        allList = []
+        FTP.retrlines('LIST {path}'.format(path=path),allList.append)
+        for i in allList:
+            if i[0] == 'd' or i[0] == 'l': # 文件夹
+                return_dir_list.append (i [i.rfind(' ')+1:])
+            # i [i.rfind(' ')+1:] 取出文件名
+            if i[0] == '-': # 文件
+                return_file_list.append (i [i.rfind(' ')+1:])
+    # =====辅助函数=====
+    
+    login ()
+    FTP.cwd ('/PiCamera')
+    
+    file_explain ('')
+
+    FTP.getresp ()
+    # =======上传操作==========
+    # fp = open ('D:\\a.jpg','wb')
+    # FTP.retrbinary('RETR ' + '白色.jpg', fp.write, 1024)
+    # =================
+    # 开始周期循环
+
+    
+    # 文件上传 FTP.storbinary('STOR {path}'.format(), fp, FTP_BUFSIZE)
+
+    
+
+TH_FTPWORKER = TR.Thread(target=FTPWORKER)
+TH_FTPWORKER.start()
+TH_LIST.append (TH_FTPWORKER)
+# https://blog.csdn.net/cl965081198/article/details/82803333
+# https://blog.csdn.net/liqinghai058/article/details/79483761
+# http://blog.sina.com.cn/s/blog_86d691b80100xu2s.html FTP原始命令
+# ========================== FTP 监听开始 ==========================
 
 
 while not EXIT: # 循环事件
