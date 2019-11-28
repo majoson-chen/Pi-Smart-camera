@@ -1,0 +1,15 @@
+{
+    "FTP":{
+        "FTP_BUFSIZE":1500,
+        "FTP_HOST":"192.168.3.11",
+        "FTP_PASSWD":"0000",
+        "FTP_PORT":20,
+        "FTP_REFRESH_CLOCK":300,
+        "FTP_USER":"ftp_127_0_0_1",
+        "REMOVE_CYCLE":7
+    },
+    "NETWORK":{
+        "SSID":"YMJK",
+        "PASSWD":"YM87C37H87E13N"
+    }
+}
