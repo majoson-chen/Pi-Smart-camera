@@ -1,0 +1,109 @@
+2019-12-01 14:19:19,665 - __main__ - INFO - Loading Config.
+2019-12-01 14:19:19,670 - __main__ - INFO - state-Listener work satrt.
+2019-12-01 14:19:19,672 - __main__ - INFO - button-Listener work start.
+2019-12-01 14:19:19,673 - __main__ - INFO - ftp-worker work start.
+2019-12-01 14:19:19,675 - __main__ - INFO - video-decoder work start.
+2019-12-01 14:19:19,678 - __main__ - INFO - auto-remove work start.
+2019-12-01 14:19:19,679 - __main__ - INFO - ftp-infomation | MSG : FTP_HOST : 192.168.3.11 | FTP_PASSWD : 0000 | FTP_PORT : 21
+2019-12-01 14:19:19,707 - __main__ - INFO - ftp-worker: login successed.
+2019-12-01 14:20:03,507 - __main__ - INFO - Loading Config.
+2019-12-01 14:20:03,511 - __main__ - INFO - state-Listener work satrt.
+2019-12-01 14:20:03,513 - __main__ - INFO - button-Listener work start.
+2019-12-01 14:20:03,514 - __main__ - INFO - ftp-worker work start.
+2019-12-01 14:20:03,515 - __main__ - INFO - video-decoder work start.
+2019-12-01 14:20:03,518 - __main__ - INFO - auto-remove work start.
+2019-12-01 14:20:03,519 - __main__ - INFO - ftp-infomation | MSG : FTP_HOST : 192.168.3.11 | FTP_PASSWD : 0000 | FTP_PORT : 21
+2019-12-01 14:20:03,551 - __main__ - INFO - ftp-worker: login successed.
+2019-12-01 14:20:12,517 - __main__ - INFO - Loading Config.
+2019-12-01 14:20:12,521 - __main__ - INFO - state-Listener work satrt.
+2019-12-01 14:20:12,523 - __main__ - INFO - button-Listener work start.
+2019-12-01 14:20:12,524 - __main__ - INFO - ftp-worker work start.
+2019-12-01 14:20:12,525 - __main__ - INFO - ftp-infomation | MSG : FTP_HOST : 192.168.3.11 | FTP_PASSWD : 0000 | FTP_PORT : 21
+2019-12-01 14:20:12,527 - __main__ - INFO - video-decoder work start.
+2019-12-01 14:20:12,531 - __main__ - INFO - auto-remove work start.
+2019-12-01 14:20:12,555 - __main__ - INFO - ftp-worker: login successed.
+2019-12-01 14:20:43,194 - __main__ - INFO - Loading Config.
+2019-12-01 14:20:43,199 - __main__ - INFO - state-Listener work satrt.
+2019-12-01 14:20:43,200 - __main__ - INFO - button-Listener work start.
+2019-12-01 14:20:43,202 - __main__ - INFO - ftp-worker work start.
+2019-12-01 14:20:43,204 - __main__ - INFO - video-decoder work start.
+2019-12-01 14:20:43,205 - __main__ - INFO - ftp-infomation | MSG : FTP_HOST : 192.168.3.11 | FTP_PASSWD : 0000 | FTP_PORT : 21
+2019-12-01 14:20:43,207 - __main__ - INFO - auto-remove work start.
+2019-12-01 14:20:43,232 - __main__ - INFO - ftp-worker: login successed.
+2019-12-01 14:20:47,459 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:48,147 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:48,491 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:48,698 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:48,906 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,075 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,234 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,386 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,530 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,658 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,819 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:49,970 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:50,115 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:50,266 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:50,410 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:50,562 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:50,715 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:50,858 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,018 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,163 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,314 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,475 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,619 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,771 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:51,914 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,066 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,218 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,370 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,514 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,674 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,826 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:52,963 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:53,099 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:53,259 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:53,411 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:53,555 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:53,706 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:53,850 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,002 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,163 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,322 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,482 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,634 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,778 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:54,906 - __main__ - INFO - SystemExit.
+2019-12-01 14:20:55,050 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,059 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,227 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,364 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,499 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,635 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,763 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:12,899 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,027 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,163 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,291 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,428 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,571 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,707 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,843 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:13,988 - __main__ - INFO - SystemExit.
+2019-12-01 14:21:14,123 - __main__ - INFO - SystemExit.
+2019-12-01 14:23:28,781 - __main__ - INFO - Loading Config.
+2019-12-01 14:23:28,805 - __main__ - INFO - state-Listener work satrt.
+2019-12-01 14:23:28,812 - __main__ - INFO - button-Listener work start.
+2019-12-01 14:23:28,828 - __main__ - INFO - ftp-worker work start.
+2019-12-01 14:23:28,838 - __main__ - INFO - ftp-infomation | MSG : FTP_HOST : 192.168.3.11 | FTP_PASSWD : 0000 | FTP_PORT : 21
+2019-12-01 14:23:28,841 - __main__ - INFO - video-decoder work start.
+2019-12-01 14:23:28,848 - __main__ - INFO - auto-remove work start.
+2019-12-01 14:23:28,879 - __main__ - INFO - ftp-worker: login successed.
+2019-12-01 14:24:57,411 - __main__ - INFO - Loading Config.
+2019-12-01 14:24:57,438 - __main__ - INFO - state-Listener work satrt.
+2019-12-01 14:24:57,443 - __main__ - INFO - button-Listener work start.
+2019-12-01 14:24:57,455 - __main__ - INFO - ftp-worker work start.
+2019-12-01 14:24:57,456 - __main__ - INFO - ftp-infomation | MSG : FTP_HOST : 192.168.3.11 | FTP_PASSWD : 0000 | FTP_PORT : 21
+2019-12-01 14:24:57,475 - __main__ - INFO - video-decoder work start.
+2019-12-01 14:24:57,496 - __main__ - INFO - auto-remove work start.
