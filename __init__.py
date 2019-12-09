@@ -14,6 +14,7 @@ import picamera # 摄像头操作支持库
 # https://blog.csdn.net/talkxin/article/details/50504601
 import os , time , ftplib , sys , pywifi , json , logging
 import threading as TR
+import bluetooth
 
 if os.name == 'posix':
     import RPi.GPIO as GPIO
@@ -60,7 +61,7 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 loger.addHandler (handler)
-
+loger.info ('Server start.')
 # ================== 配置Log & 创建文件夹 ========================
 
 TH_LIST = []
@@ -86,11 +87,13 @@ GPIO.setup (23,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup (18,GPIO.OUT)
 STATELED = GPIO.PWM (18,0.2) # 录制状态led灯泡的PWM类
 # ====================== GPIO初始化 ===========================
-
-PICM = picamera.PiCamera() #实例化
-PICM.video_stabilization = True # 摄像稳定
-PICM.framerate = 24 # 帧率
-PICM.resolution = (1920,1080) # 1080p
+try:
+    PICM = picamera.PiCamera() #实例化
+    PICM.video_stabilization = True # 摄像稳定
+    PICM.framerate = 24 # 帧率
+    PICM.resolution = (1920,1080) # 1080p
+except:
+    loger.error ('Camera inital faild , please check your camera module.')
 # ====================== PiCamera初始化 ===========================
 
 def load_config ():
@@ -100,13 +103,13 @@ def load_config ():
         with open ('/boot/camera_config.json','r') as config_file:
             try:
                 cfg = json.load (config_file)
-                FTP_BUFSIZE = cfg['FTP']['FTP_BUFSIZE']
+                FTP_BUFSIZE = int(cfg['FTP']['FTP_BUFSIZE'])
                 FTP_HOST = cfg['FTP']['FTP_HOST']
                 FTP_PASSWD = cfg['FTP']['FTP_PASSWD']
-                FTP_PORT = cfg['FTP']['FTP_PORT']
-                FTP_REFRESH_CLOCK = cfg['FTP']['FTP_REFRESH_CLOCK']
+                FTP_PORT = int(cfg['FTP']['FTP_PORT'])
+                FTP_REFRESH_CLOCK = int(cfg['FTP']['FTP_REFRESH_CLOCK'])
                 FTP_USER = cfg['FTP']['FTP_USER']
-                REMOVE_CYCLE = cfg['FTP']['REMOVE_CYCLE']
+                REMOVE_CYCLE = int(cfg['FTP']['REMOVE_CYCLE'])
             except Exception as e:
                 loger.error ('Config read faild | ' + repr (e))
             try:
@@ -168,7 +171,7 @@ def buttonListener ():
     try:
         while True:
             try:
-                if GPIO.wait_for_edge (23,GPIO.RISING,bouncetime=200,timeout=86400000) != GPIO.RISING: # 等待按钮按下
+                if GPIO.wait_for_edge (23,GPIO.RISING,bouncetime=450,timeout=86400000) != GPIO.RISING: # 等待按钮按下
                     try:
                         for i in os.listdir ('video'):
                             if i == getTimeStamp('%Y-%m-%d'):
@@ -189,7 +192,7 @@ def buttonListener ():
                             CODEING_STATE.RECODING = True
                             time.sleep (3)
                             # 至少录制三秒
-                            GPIO.wait_for_edge (23,GPIO.FALLING,bouncetime=200) # 等待按钮再次按下
+                            GPIO.wait_for_edge (23,GPIO.RISING,bouncetime=450) # 等待按钮再次按下
                             PICM.stop_recording () # 停止录制
                             CODEING_STATE.RECODING = False
                             loger.info ('Video end recoding.')
@@ -255,16 +258,18 @@ def FTPWORKER ():
             # 先判断上传目录是否存在,无则创建之
             for i in FTP.mlsd ():
                 # i[0] : 文件名 
-                if i[0] == dir: # 如果存在 , 跳出循环后上传
+                if i[0] == path [:10]: # 如果存在 , 跳出循环后上传
+                    # path [:10] Such as : 2019-08-07
                     break
-                else:
-                    FTP.mkd (dir)
-                    break
+            else:
+                FTP.mkd (path [:10])
+                # 如果日期文件不存在, 创建之
             
             # 开始上传
             loger.info ('File upload start: {path}'.format(path=path))
-            with open (path,'rb') as fp:
-                FTP.storbinary('STOR {path}'.format(os.path.join (dir,os.path.basename(path))), fp, FTP_BUFSIZE)
+            with open ('video/'+ path[:10]+'/' + path,'rb') as fp:
+                # FTP.storbinary('STOR {path}'.format(os.path.join (dir,os.path.basename(path))), fp, FTP_BUFSIZE)
+                FTP.storbinary('STOR {path}'.format(path=path[:10]+'/'+path),fp)
                 # 函数返回即上传成功
             
             CODEING_STATE.UPLOADING = False
@@ -275,7 +280,7 @@ def FTPWORKER ():
             CODEING_STATE.UPLOADING = False
             return False
     # =====辅助函数=====
-    loger.info ('ftp-infomation | MSG : FTP_HOST : {0} | FTP_PASSWD : {1} | FTP_PORT : {2}'.format (FTP_HOST,FTP_PASSWD,FTP_PORT))
+    loger.info ('ftp-infomation | MSG : FTP_HOST : {0} | FTP_PASSWD : {1} | FTP_USER : {3}| FTP_PORT : {2}'.format (FTP_HOST,FTP_PASSWD,FTP_PORT,FTP_USER))
     login ()
     while True:
         try:
@@ -326,7 +331,7 @@ def FTPWORKER ():
                                             try:
                                                 FTP.delete (os.path.join (name,name_))
                                             except Exception as e:
-                                                loger.error ('ftp-worker delete fiel faild | {0}'.format(repr(e)))
+                                                loger.error ('ftp-worker delete file faild | {0}'.format(repr(e)))
                                             
                                             if upload (file_name,name):
                                                 # 弹出 ALL_LOCAL_FILE 中的对应项目
@@ -350,8 +355,7 @@ def FTPWORKER ():
 
         except Exception as e:
             loger.error ('FTPworker worked in trouble. : {0} ; now retry again.'.format (repr (e)))
-
-        time.sleep (FTP_REFRESH_CLOCK)
+            time.sleep (FTP_REFRESH_CLOCK)
 
     # =======下载操作==========
     # fp = open ('D:\\a.jpg','wb')
@@ -374,6 +378,12 @@ def videodecoder ():
     loger.info ('video-decoder work start.')
     while True:
         try:
+
+            if CODEING_STATE.RECODING == True:
+                time.sleep (10)
+                continue
+                # 如果正在录制,放弃编码
+
             # 开始遍历文件夹
             ALL_FILE = [] # 等待编码文件的绝对路径
             for i_dir in os.listdir ('video'):
@@ -381,7 +391,7 @@ def videodecoder ():
                     # 如果是目录 则说明是日期目录
                     # 继续往下
                     for i_file in os.listdir (os.path.join('video',i_dir)):
-                        if i_file [-4:] == '.h264':
+                        if i_file [-5:] == '.h264':
                             # 如果是h.264文件,说明还没有被转码
                             # 添加到目录中
                             ALL_FILE.append (os.path.realpath(os.path.join(
@@ -393,7 +403,7 @@ def videodecoder ():
             # 将所有待转码文件进行转码
             for i in ALL_FILE:
                 try: # 防止出现编码失败
-                    if os.system ('./ffmpeg -i {input} -codec copy {output}'.format (input=i,output=i[:-4] + '.mp4')) == 0:
+                    if os.system ('./ffmpeg -i {input} -codec copy {output}'.format (input=i,output=i[:-4] + 'mp4')) == 0:
                         # =0 说明成功
                         try:
                             os.remove (i) # 删除 '.h264' 文件
@@ -410,7 +420,7 @@ def videodecoder ():
         except:
             loger.error ('video-decoder worked in trouble | {err}'.format(err=repr(e)))
 
-        time.sleep (FTP_REFRESH_CLOCK * 2)
+        time.sleep (FTP_REFRESH_CLOCK * 1.3)
 TH_VIDEOCODER = TR.Thread (target=videodecoder)
 TH_VIDEOCODER.start ()
 TH_LIST.append (TH_VIDEOCODER)
@@ -440,15 +450,32 @@ def autoremove (): # 自动删除程序
                                 if (time.time () - createTime) > REMOVE_CYCLE: # 如果大于删除的周期
                                     os.remove (os.path.join ('video',i_dir,i_file)) # 删除文件
                             except Exception as e:
-                                loger.error ('auto-remove remove file faild | {0}'.format (repr (e)))
+                                loger.error ('auto-remove remove file faild (0) | {0}'.format (repr (e)))
         except Exception as e:
-            loger.error ('auto-remove listdir faild | {0}'.format (repr (e)))
+            loger.error ('auto-remove listdir faild (1) | {0}'.format (repr (e)))
         time.sleep (REMOVE_CYCLE)
 TH_AUTOREMOVE = TR.Thread (target=autoremove)
 TH_AUTOREMOVE.start ()
 TH_LIST.append (TH_AUTOREMOVE)
 print ('MSG : Autoremove Worker start now.')
 # =========== 自动清理 =============
+
+
+def bluetooth_listener ():
+    BSOC = bluetooth.BluetoothSocket ()
+    BSOC.bind ( ( '',1 ) )
+    BSOC.listen (1)
+    while True:
+        sock,info = BSOC.accept ()
+        while True:
+            sock.recv (1024).decode ('utf-8')
+
+
+
+# Python 蓝牙参考文献:
+# https://blog.csdn.net/zym326975/article/details/93897096
+# https://pybluez.readthedocs.io/en/latest/api/device_discoverer.html
+# https://www.jerryzone.cn/raspi-bluetooth-socket/
 
 while True:
     try:
