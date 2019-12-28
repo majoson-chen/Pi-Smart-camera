@@ -8,7 +8,7 @@
         - 拍照文件保存至 /img
         - 视频文件保存至 /video
 '''
-import picamera # 摄像头操作支持库
+import picamera,serial # 摄像头操作支持库
 # 参考手册:https://blog.csdn.net/m0_37509650/article/details/80282646
 # [官方文档] https://picamera.readthedocs.io/en/release-1.13/
 # https://blog.csdn.net/talkxin/article/details/50504601
@@ -16,13 +16,11 @@ import os , time , ftplib , sys , pywifi , json , logging
 import threading as TR
 #import bluetooth
 
-time.sleep (20)
+# time.sleep (20)
 # 20秒后开始监听,防止开始时电平波动
 
-if os.name == 'posix':
-    import RPi.GPIO as GPIO
-else:
-    import GPIO_Win as GPIO
+import RPi.GPIO as GPIO
+
 # 针对不同平台的GPIO库进行代码提示优化
 # =================== 载入支持库 ==============================
 
@@ -35,6 +33,7 @@ if __name__ ==  '__main__':
 else:
     quit ()
 
+#=======================================================
 
 def getTimeStamp (format='%Y-%m-%d-%a-%H-%M-%S'): # 获取时间戳
     '''获取时间戳'''
@@ -230,8 +229,9 @@ TH_LIST.append (TH_BUTTON_LISTENER)
 print ('MSG : Button listener start now.')
 # ======================= 按钮监听开始 ==========================
 
-FTP = ftplib.FTP ()
-FTP.set_pasv (False) # 禁用被动模式,使用20端口传输
+
+#FTP = ftplib.FTP ()
+#FTP.set_pasv (False) # 禁用被动模式,使用20端口传输
 def FTPWORKER ():
     global FTP_BUFSIZE,FTP_HOST,FTP_PASSWD,FTP_PORT,FTP_REFRESH_CLOCK,FTP_USER
     loger.info ('ftp-worker work start.')
@@ -379,10 +379,10 @@ def FTPWORKER ():
     # =================
     # 开始周期循环
     # 文件上传 FTP.storbinary('STOR {path}'.format(), fp, FTP_BUFSIZE)
-TH_FTPWORKER = TR.Thread(target=FTPWORKER)
-TH_FTPWORKER.start()
-TH_LIST.append (TH_FTPWORKER)
-print ('MSG : Ftp Worker start now.')
+#TH_FTPWORKER = TR.Thread(target=FTPWORKER)
+#TH_FTPWORKER.start()
+#TH_LIST.append (TH_FTPWORKER)
+#print ('MSG : Ftp Worker start now.')
 # https://blog.csdn.net/cl965081198/article/details/82803333
 # https://blog.csdn.net/liqinghai058/article/details/79483761
 # http://blog.sina.com.cn/s/blog_86d691b80100xu2s.html FTP原始命令
@@ -482,16 +482,47 @@ TH_LIST.append (TH_AUTOREMOVE)
 print ('MSG : Autoremove Worker start now.')
 # =========== 自动清理 =============
 
+def postion_recoder ():
+    '''
+        记录位置信息的变化并将其写进当天的文件里
+    '''
+    loger_postion = logging.getLogger ('postion')
+    loger_postion.setLevel (logging.INFO)
+    handler = logging.FileHandler("log/postion/{0}.txt".format(getTimeStamp('%Y-%m-%d')))
+    handler.setLevel (logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    loger_postion.addHandler (handler)
 
-# def bluetooth_listener ():
-#     BSOC = bluetooth.BluetoothSocket ()
-#     BSOC.bind ( ( '',1 ) )
-#     BSOC.listen (1)
-#     while True:
-#         sock,info = BSOC.accept ()
-#         while True:
-#             sock.recv (1024).decode ('utf-8')
+    try:
+        sr = serial.Serial("/dev/ttyAMA0", 9600)
+        sr.setDTR (False)
+        sr.setRTS (False)
+        loger.info ('serial opened succeed.')
+    except Exception as e:
+        loger.error ('postion_recoder: Serial port open fiald. | ' + repr (e))
 
+    try:
+        while True:
+            result = sr.readline ().decode ('ascii')
+            if '+POSTION:' in result: # 如果有,则证明是位置的消息
+                longitude , latitude = result[result.find ('(')+1: result.rfind (')')].split(',')
+                loger_postion.info (" | latitude: {latitude} , longitude: {longitude}".format(
+                    latitude=latitude,longitude=longitude
+                ))
+
+            else: # 如果没有,跳过
+                continue
+    except Exception as e:
+        loger.error ('postion_recoder : serial read data fiald. | ' + repr (e))
+        
+TH_POSTION_RECODER = TR.Thread(target=postion_recoder)
+TH_POSTION_RECODER.run()
+TH_LIST.append (TH_POSTION_RECODER)
+print ('MSG : postionrecoder start now.')
+# 树莓派 串口设置教程:
+# https://blog.csdn.net/qq_40388909/article/details/79438317
+# Python 串口模块: https://blog.csdn.net/as472780551/article/details/79126927
 
 
 # Python 蓝牙参考文献:
